@@ -99,6 +99,38 @@ partition by list(stan) (
 
 select * from karta_przyjecia partition (wymarle_na_wolnosci);
 
+#trigger 1 - automatyczne tworzenie maila dla opiekuna
+create trigger before_insert_opiekun
+before insert on opiekunowie
+for each row 
+begin 
+	set new.email = concat(lower(new.imie),'.',lower(new.nazwisko),'@zoo.pl');
+end;
+
+select * from sponsorzy;
+
+#trigger2 - aktualizacja tabeli opiekunowie po dodaniu do opiekun nowego członka
+create trigger update_opiekun_after_insert
+after insert on opiekunowie
+for each row
+begin
+    declare v_opiekun_id INT;
+
+    select ID into v_opiekun_id
+    from opiekunowie
+    where ID = NEW.ID;
+    if v_opiekun_id is not null then
+        update opiekun
+        set data_zatrudnienia = CURRENT_DATE, 
+            zwierze_opieka = null, 
+            okres_opieki = null 
+        where ID = v_opiekun_id;
+    end if;
+end;
+
+select * from gdzie_zwierze ;
+select * from opiekunowie;
+
 
 #Dodawanie danych do tabeli opiekunowie
 insert into opiekunowie (imie, nazwisko) values
@@ -108,6 +140,8 @@ insert into opiekunowie (imie, nazwisko) values
 ('Kuba', 'Krzakowy'),
 ('Jan', 'Janowicz'),
 ('Zenon', 'Martin');
+
+select * from opiekunowie;
 
 
 #Dodawanie danych do tabeli obszary_zoo
@@ -278,49 +312,7 @@ join stan_gatunku on zwierzeta.stan_gatunku = stan_gatunku.id;
 
 select * from karta_przyjecia;
 
-#trigger 1 - automatyczne tworzenie maila dla opiekuna
-create trigger before_insert_opiekun
-before insert on opiekunowie
-for each row 
-begin 
-	set new.email = concat(lower(new.imie),'.',lower(new.nazwisko),'@zoo.pl');
-end;
 
-select * from sponsorzy;
-
-#trigger2 - aktualizacja tabeli opiekunowie po dodaniu do opiekun nowego członka
-create trigger update_opiekun_after_insert
-after insert on opiekunowie
-for each row
-begin
-    declare v_opiekun_id INT;
-
-    select ID into v_opiekun_id
-    from opiekunowie
-    where ID = NEW.ID;
-    if v_opiekun_id is not null then
-        update opiekun
-        set data_zatrudnienia = CURRENT_DATE, 
-            zwierze_opieka = null, 
-            okres_opieki = null 
-        where ID = v_opiekun_id;
-    end if;
-end;
-
-select * from gdzie_zwierze ;
-select * from opiekun;
-
-#trigger3 - aktualizuj tabele gdzie_zwierze po dodaniu nowego zwierzecia do zwierzeta
-CREATE TRIGGER update_gdzie_zwierze_after_insert
-AFTER INSERT ON zwierzeta
-FOR EACH ROW
-BEGIN
-    -- Dodaj nowe zwierzę do tabeli gdzie_zwierze
-    INSERT INTO gdzie_zwierze (data_pobytu)
-    VALUES (NEW.data_przybycia)
-    ON DUPLICATE KEY update
-    data_pobytu = NEW.data_przybycia;
-END;
 
 #procedura 1 - suma kwot dotacji
 CREATE PROCEDURE suma_dotacji()
