@@ -311,18 +311,16 @@ select * from gdzie_zwierze ;
 select * from opiekun;
 
 #trigger3 - aktualizuj tabele gdzie_zwierze po dodaniu nowego zwierzecia do zwierzeta
-CREATE TRIGGER AktualizujTabele_gdzie_zwierze
+CREATE TRIGGER update_gdzie_zwierze_after_insert
 AFTER INSERT ON zwierzeta
 FOR EACH ROW
 BEGIN
-    insert into gdzie_zwierze (ID, nazwa_obszaru, zwierze, data_pobytu)
-    values (new.ID, new.czesc_zoo, new.imie, NOW())
-    on DUPLICATE key update
-    ID = new.ID,
-    nazwa_obszaru = new.czesc_zoo,
-    zwierze = new.imie,
-   	data_pobytu= NOW();
-end ;
+    -- Dodaj nowe zwierzę do tabeli gdzie_zwierze
+    INSERT INTO gdzie_zwierze (data_pobytu)
+    VALUES (NEW.data_przybycia)
+    ON DUPLICATE KEY update
+    data_pobytu = NEW.data_przybycia;
+END;
 
 #procedura 1 - suma kwot dotacji
 CREATE PROCEDURE suma_dotacji()
