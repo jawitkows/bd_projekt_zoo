@@ -109,28 +109,24 @@ end;
 
 select * from sponsorzy;
 
-#trigger2 - aktualizacja tabeli opiekunowie po dodaniu do opiekun nowego członka
-create trigger update_opiekun_after_insert
-after insert on opiekunowie
-for each row
-begin
-    declare v_opiekun_id INT;
+#trigger 2 - automatyczne dodawanie zwierzecia do zwierze_widok
+CREATE TRIGGER update_zwierze_widok_after_insert
+AFTER INSERT ON zwierzeta
+FOR EACH ROW
+BEGIN
+    INSERT INTO zwierze_widok (nazwa_zwierzecia, data_przyjecia, opiekun, okres_opieki, wiek, pozywienie)
+    VALUES (NEW.imie, NEW.data_przybycia, NEW.opiekun, NEW.data_przybycia, NEW.wiek, 'Karma') -- Dostosuj pozywienie do własnych potrzeb
+    ON DUPLICATE KEY UPDATE
+    data_przyjecia = NEW.data_przybycia,
+    opiekun = NEW.opiekun,
+    okres_opieki = NEW.data_przybycia,
+    wiek = NEW.wiek;
+END;
 
-    select ID into v_opiekun_id
-    from opiekunowie
-    where ID = NEW.ID;
-    if v_opiekun_id is not null then
-        update opiekun
-        set data_zatrudnienia = CURRENT_DATE, 
-            zwierze_opieka = null, 
-            okres_opieki = null 
-        where ID = v_opiekun_id;
-    end if;
-end;
+insert into zwierzeta (imie, gatunek, wiek, opiekun, dotacje, czesc_zoo, stan_gatunku, data_przybycia) values
+('Krolowa','zebra', 8, 4, 8, 1, 5, '2024-01-26');
 
-select * from gdzie_zwierze ;
-select * from opiekunowie;
-
+select * from zwierze_widok;
 
 #Dodawanie danych do tabeli opiekunowie
 insert into opiekunowie (imie, nazwisko) values
