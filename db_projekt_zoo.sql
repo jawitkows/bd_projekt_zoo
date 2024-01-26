@@ -289,18 +289,23 @@ end;
 select * from sponsorzy;
 
 #trigger2 - aktualizacja tabeli opiekunowie po dodaniu do opiekun nowego członka
-CREATE TRIGGER AktualizujTabeleOpiekunowie
-AFTER INSERT ON opiekun
-FOR EACH ROW
-BEGIN
-    INSERT INTO opiekunowie (ID, data_zatrudnienia, data_dodania)
-    VALUES (NEW.ID, NOW(), NOW(), NEW.zwierze_opieka, NEW.okres_opieki)
-    ON DUPLICATE KEY UPDATE
-    ID = NEW.ID,
-    okres_zatrudnienia = NOW(),
-    zwierze_opieka = new.zwierze_opieka,
-   okres_opieki = NOW();
-end ;
+create trigger update_opiekun_after_insert
+after insert on opiekunowie
+for each row
+begin
+    declare v_opiekun_id INT;
+
+    select ID into v_opiekun_id
+    from opiekunowie
+    where ID = NEW.ID;
+    if v_opiekun_id is not null then
+        update opiekun
+        set data_zatrudnienia = CURRENT_DATE, 
+            zwierze_opieka = null, 
+            okres_opieki = null 
+        where ID = v_opiekun_id;
+    end if;
+end;
 
 select * from gdzie_zwierze ;
 select * from opiekun;
