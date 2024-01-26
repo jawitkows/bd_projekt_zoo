@@ -128,6 +128,20 @@ insert into zwierzeta (imie, gatunek, wiek, opiekun, dotacje, czesc_zoo, stan_ga
 
 select * from zwierze_widok;
 
+#trigger3- aktualizacja tabeli opiekunowie po dodaniu do opiekun nowego członka
+CREATE TRIGGER update_opiekun_after_insert
+AFTER INSERT ON opiekunowie
+FOR EACH ROW
+BEGIN
+    -- Dodaj nowego opiekuna do tabeli opiekun
+    INSERT INTO opiekun (ID, data_zatrudnienia, zwierze_opieka, okres_opieki)
+    VALUES (NEW.ID, CURRENT_DATE, NULL, NULL)
+    ON DUPLICATE KEY UPDATE
+    data_zatrudnienia = CURRENT_DATE, 
+    zwierze_opieka = NULL,
+    okres_opieki = NULL;
+END;
+
 #Dodawanie danych do tabeli opiekunowie
 insert into opiekunowie (imie, nazwisko) values
 ('Marta', 'Buc'),
